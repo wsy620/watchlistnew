@@ -15,6 +15,8 @@ def hello2():
 
 
 @app.route('/home')
+@app.route('/home1')
+@app.route('/home2')
 def hello3():
     return 'Welcome to My Watchlist!'
 
