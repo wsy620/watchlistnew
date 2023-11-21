@@ -101,32 +101,18 @@ class Movie(db.Model):  # 表名将会是 movie
         return json.dumps(movie_array)
 
 
+@app.context_processor
+def inject_user():
+    user = User.query.first()
+    return dict(user=user)
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+
 @app.route('/')
 def index():
-    user = User.query.first()  # 读取用户记录
-    movies = Movie.query.all()  # 读取所有电影记录
-    return render_template('index.html', user=user, movies=movies)
-
-
-class MyEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, np.integer):
-            return int(obj)
-        elif isinstance(obj, np.floating):
-            return float(obj)
-        elif isinstance(obj, np.ndarray):
-            return obj.tolist()
-        else:
-            return super(MyEncoder, self).default(obj)
-
-
-@app.route('/query')
-def query():
-    movies = Movie.query.all()  # 读取所有电影记录
-    print(movies)
-    res = []
-    res = Movie.to_json(movies)
-    # for movie in movies:
-    #     res.append(movie.to_json())
-    print(res)
-    return res
+    movies = Movie.query.all()
+    return render_template('index.html', movies=movies)
