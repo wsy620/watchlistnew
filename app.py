@@ -6,7 +6,7 @@ import json
 
 @app.route('/')
 def hello():
-    return u'欢迎来到我的 Watchlist！'
+    return u'欢迎来到我的 movie management system！'
 
 
 @app.route('/hello2')
@@ -18,7 +18,7 @@ def hello2():
 @app.route('/home1')
 @app.route('/home2')
 def hello3():
-    return 'Welcome to My Watchlist!'
+    return 'Welcome to My movie management system!'
 
 
 @app.route('/user/<name>')
