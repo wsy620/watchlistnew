@@ -3,7 +3,7 @@ from flask import Flask, url_for, render_template
 app = Flask(__name__)
 import json
 
-name = 'Grey Li'
+name = 'WSY'
 movies = [
     {'title': 'My Neighbor Totoro', 'year': '1988'},
     {'title': 'Dead Poets Society', 'year': '1989'},

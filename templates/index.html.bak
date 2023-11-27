@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<p>{{ combined_data|length }} Titles</p>
+<ul class="movie-list">
+    {% for data in combined_data %}
+    <li>{{ data.movie_name }} - {{ data.year }} - {{ data.release_date }} - {{ data.country }} - {{ data.type }}</li>
+    <li>Box Office: {{ data.box }}</li>
+    <li>Actor: {{ data.actor_name }} - Gender: {{ data.gender }} - Country: {{ data.country }}</li>
+    <li>Relation Type: {{ data.relation_type }}</li>
+    <span class="float-right">
+<a class="imdb" href="https://www.imdb.com/find?q={{ data.movie_name }}" target="_blank"
+   title="Find this movie on IMDb">IMDb</a>
+<a class="btn" href="{{ url_for('edit', movie_id=data.movie_id) }}">详情</a>
+<a class="btn" href="{{ url_for('edit', movie_id=data.movie_id) }}">Edit</a>
+<form class="inline-form" method="post" action="{{ url_for('.delete', movie_id=data.movie_id) }}">
+<input class="btn" type="submit" name="delete" value="Delete"
+       onclick="return confirm('Are you sure?')">
+</form>
+</span>
+    {% endfor %}
+
+    <!--    {% for movie in movies %}-->
+    <!--    <li>{{ movie.movie_name }} - {{ movie.year }} - {{ movie.release_date }} - {{ movie.country }} - {{ movie.movie_type-->
+    <!--        }}-->
+    <!--        <span class="float-right">-->
+    <!--            <a class="imdb" href="https://www.imdb.com/find?q={{ movie.movie_name }}" target="_blank"-->
+    <!--               title="Find this movie on IMDb">IMDb</a>-->
+    <!--                <a class="btn" href="{{ url_for('edit', movie_id=movie.movie_id) }}">详情</a>-->
+    <!--                <a class="btn" href="{{ url_for('edit', movie_id=movie.movie_id) }}">Edit</a>-->
+    <!--                <form class="inline-form" method="post" action="{{ url_for('.delete', movie_id=movie.movie_id) }}">-->
+    <!--                    <input class="btn" type="submit" name="delete" value="Delete"-->
+    <!--                           onclick="return confirm('Are you sure?')">-->
+    <!--                </form>-->
+
+    <!--        </span>-->
+    <!--    </li>-->
+    <!--    {% endfor %}-->
+</ul>
+
+<p>{{ combined_data|length }} Titles</p>
+<!-- 在模板中可以直接使用 current_user 变量 -->
+
+<form method="post">
+    last_movies_id<input value="{{last_movies_id}}" type="text" name="movie_id" autocomplete="off" required><br/>
+    movie_name <input type="text" name="movie_name" autocomplete="off" required><br/>
+    Year <input type="text" name="year" autocomplete="off" required><br/>
+    release_date <input type="text" name="release_date" autocomplete="off" required><br/>
+    country <input type="text" name="country" autocomplete="off" required><br/>
+    type <input type="text" name="movie_type" autocomplete="off" required><br/>
+
+    <div>
+        <label>演员:</label>
+        <select name="actor_name">
+            {% for actor in actors %}
+            <option>{{actor.actor_name}}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    关系<input type="text" name="relation" autocomplete="off" required><br/>
+    <input class="btn" type="submit" name="submit" value="Add"><br/>
+</form>
+
+
+<img alt="Walking Totoro" class="totoro" src="{{ url_for('static', filename='images/totoro.gif') }}" title="to~to~ro~">
+{% endblock %}
+
+

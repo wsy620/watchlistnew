@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h3>{{ combined_data.movie_name }} ({{ combined_data.year }})</h3>
+
+<div class="movie-info">
+    <p><strong>上映日期：</strong>{{ combined_data.release_date }}</p>
+    <p><strong>国家：</strong>{{ combined_data.country }}</p>
+    <p><strong>类型：</strong>{{ combined_data.type }}</p>
+    <p><strong>票房：</strong>{{ combined_data.box }} 亿</p>
+</div>
+
+<h4>演员列表</h4>
+<ul class="actor-list">
+    {% for actor in combined_data.actors %}
+    <li class="actor">
+        <h5>{{ actor.actor_name }}（{{ actor.gender }}）- {{actor.act_country}}</h5>
+        <ul class="relations">
+            {% for relation in actor.relations %}
+            <li>{{ relation.relation_type }}</li>
+            {% endfor %}
+        </ul>
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

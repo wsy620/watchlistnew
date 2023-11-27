@@ -13,5 +13,8 @@ env\Scripts\activate
 ```commandline
 
 flask run 
+flask initdb
+flask initdb --drop
 
+flask forge
 ```
