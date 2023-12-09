@@ -4,7 +4,7 @@
     {% block head %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>admin's movie management system</title>
+    <title>WSY's movie management system</title>
     <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" type="text/css">
     {% endblock %}
@@ -17,8 +17,20 @@
 {% endfor %}
 <h2>
     <img alt="Avatar" class="avatar" src="{{ url_for('static', filename='images/avatar.png') }}">
-    admin's movie management system
+    {% if current_user.is_authenticated %}
+    {{current_user.name}} movie management system
+    {% else %}
+
+    欢迎你，游客
+    {% endif %}
 </h2>
+
+{% if current_user.is_authenticated %}
+
+<li><a href="{{ url_for('logout') }}">Logout</a></li>
+{% else %}
+<li><a href="{{ url_for('login') }}">Login</a> <a href="{{ url_for('register') }}">register</a></li>
+{% endif %}
 
 <nav>
     <ul>

@@ -8,9 +8,10 @@
     <p><strong>国家：</strong>{{ combined_data.country }}</p>
     <p><strong>类型：</strong>{{ combined_data.type }}</p>
     <p><strong>票房：</strong>{{ combined_data.box }} 亿</p>
+    <p><strong>排名：</strong>第 {{ combined_data.order_num }} 名</p>
 </div>
 
-<h4>演员列表</h4>
+<h4>演职人员列表</h4>
 <ul class="actor-list">
     {% for actor in combined_data.actors %}
     <li class="actor">

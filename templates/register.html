@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h3>register</h3>
+
+<form action="/register" method="post">
+    <table>
+        <ul>
+
+            <li>
+                <label for="name0">Name:</label>
+                <input type="text" id="name0" name="name0" required>
+            </li>
+        </ul>
+
+        <ul>
+            <li>
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+            </li>
+        </ul>
+
+        <ul>
+            <li>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </li>
+        </ul>
+
+    </table>
+
+
+    <button type="submit">Register</button>
+</form>
+
+{% endblock %}

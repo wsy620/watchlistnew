@@ -1,19 +1,15 @@
 import json
 import os
 import sys
+
+import click
 from flask import Flask, render_template, request, flash, redirect, url_for
-from flask_sqlalchemy import SQLAlchemy
-
-import click
-
-import click
-
-from werkzeug.security import generate_password_hash, check_password_hash
-
-from flask_login import UserMixin, current_user
-from flask_login import login_user
-from flask_login import login_required, logout_user
 from flask_login import LoginManager
+from flask_login import UserMixin, current_user
+from flask_login import login_required, logout_user
+from flask_login import login_user
+from flask_sqlalchemy import SQLAlchemy
+from werkzeug.security import generate_password_hash, check_password_hash
 
 WIN = sys.platform.startswith('win')
 if WIN:  # 如果是 Windows 系统，使用三个斜线

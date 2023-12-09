@@ -4,8 +4,10 @@ from datetime import datetime
 
 import click
 from flask import Flask, render_template, request, flash, redirect, url_for
+from flask_login import login_required, logout_user, login_manager, LoginManager, login_user, UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import CheckConstraint
+from werkzeug.security import generate_password_hash, check_password_hash
 
 WIN = sys.platform.startswith('win')
 if WIN:  # 如果是 Windows 系统，使用三个斜线
@@ -256,6 +258,41 @@ class MovieActorRelation(db.Model):
         }
 
 
+class User(db.Model, UserMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(20))
+    username = db.Column(db.String(20))  # 用户名
+    password_hash = db.Column(db.String(128))  # 密码散列值
+
+    def set_password(self, password):  # 用来设置密码的方法，接受密码作为参数
+        self.password_hash = generate_password_hash(password)  # 将生成的密码保持到对应字段
+
+    def validate_password(self, password):  # 用于验证密码的方法，接受密码作为参数
+        return check_password_hash(self.password_hash, password)  # 返回布尔值
+
+
+@app.cli.command()
+@click.option('--username', prompt=True, help='The username used to login.')
+@click.option('--password', prompt=True, hide_input=True, confirmation_prompt=True, help='The password used to login.')
+def admin(username, password):
+    """Create user."""
+    db.create_all()
+
+    user = User.query.first()
+    if user is not None:
+        click.echo('Updating user...')
+        user.username = username
+        user.set_password(password)  # 设置密码
+    else:
+        click.echo('Creating user...')
+        user = User(username=username, name='Admin')
+        user.set_password(password)  # 设置密码
+        db.session.add(user)
+
+    db.session.commit()  # 提交数据库会话
+    click.echo('Done.')
+
+
 @app.cli.command()
 def forge():
     """Generate fake data."""
@@ -295,13 +332,10 @@ def forge():
         db.session.add(movie_actor_rela)
 
     db.session.commit()
+
     click.echo('Done.')
 
 
-# @app.context_processor
-# def inject_user():
-#     user = User.query.first()
-#     return dict(user=user)
 def merge_data(data_list):
     merged_data = {}
     for data in data_list:
@@ -342,6 +376,18 @@ def merge_data(data_list):
         for actor_data in data['actors']:
             actor_data.pop('id', None)
 
+    # 增加排名字段
+
+    abccccccc = [
+        {'movie_id': '1022', 'movie_name': '自定义2', 'release_date': '1986-11-22', 'country': '中国12',
+         'type': '喜剧3', 'year': 1986, 'box': 80.02, 'actors': [
+            {'actor_id': '2001', 'actor_name': '吴京', 'gender': '男', 'act_country': '中国',
+             'relations': [{'id': '57', 'relation_type': '演员2'}]}]}
+
+    ]
+    for i in range(len(merged_data_list)):
+        merged_data_list[i]["order_num"] = i + 1
+
     return merged_data_list
 
 
@@ -368,7 +414,7 @@ def query_all_data():
     return new_combined_data
 
 
-def convert_data_format_act_relation(actor_id, relation_type):
+def _convert_data_format_act_relation(actor_id, relation_type):
     result = []
 
     new_relation_type = []
@@ -397,6 +443,79 @@ def convert_data_format_act_relation(actor_id, relation_type):
     return result
 
 
+@app.context_processor
+def inject_user():
+    user = User.query.first()
+    return dict(user=user)
+
+
+login_manager = LoginManager(app)  # 实例化扩展类
+login_manager.login_view = 'login'
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        if not username or not password:
+            flash('Invalid input.')
+            return redirect(url_for('login'))
+
+        user = User.query.first()
+        # 验证用户名和密码是否一致
+        if username == user.username and user.validate_password(password):
+            login_user(user)  # 登入用户
+            flash('Login success.')
+            return redirect(url_for('index'))  # 重定向到主页
+
+        flash('Invalid username or password.')  # 如果验证失败，显示错误消息
+        return redirect(url_for('login'))  # 重定向回登录页面
+
+    return render_template('login.html')
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        name = request.form['name0']
+        username = request.form['username']
+        password = request.form['password']
+
+        # 检查用户名是否已存在
+        # Admin 用户已经存在了，使用其他用户名
+        existing_user = User.query.filter_by(username=username).first()
+        if existing_user:
+            flash("Username already exists. Please choose a different username.")
+            return render_template('register.html', )
+
+        # 创建新用户
+        new_user = User(name=name, username=username, password_hash=None)
+        new_user.set_password(password=password)
+        db.session.add(new_user)
+        db.session.commit()
+
+        flash(f"User {username} registered successfully!")
+        return render_template('login.html')
+
+    return render_template('register.html', )
+
+
+@app.route('/logout')
+@login_required  # 用于视图保护，后面会详细介绍
+def logout():
+    logout_user()  # 登出用户
+    flash('Goodbye.')
+    return redirect(url_for('index'))  # 重定向回首页
+
+
+@login_manager.user_loader
+def load_user(user_id):  # 创建用户加载回调函数，接受用户 ID 作为参数
+    user = User.query.get(int(user_id))  # 用 ID 作为 User 模型的主键查询对应的用户
+    return user  # 返回用户对象
+
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     # 新增相关的代码
@@ -408,9 +527,12 @@ def index():
         country = request.form.get('country')  # 传入表单对应输入字段的 name 值
         movie_type = request.form.get('movie_type')
         year = request.form.get('year')  # 传入表单对应输入字段的 name 值
+
+        box = request.form.get('box')
+
+        # 获取到的文件会是数组文件
         actor_id = request.form.get('actor_id')
         relation = request.form.get('relation')
-        box = request.form.get('box')
 
         # 验证数据
         if not movie_name or not year or len(year) > 4 or len(movie_name) > 60:
@@ -428,12 +550,12 @@ def index():
         db.session.add(movie)  # 添加到数据库会话
         # 2. 演员表不用插入
 
-        # 3. 插入收视率和 电影关系表
+        # 3. 插入票房和电影关系表
         movie_box = MovieBox(movie_id=movie_id,
                              box=box)
         db.session.add(movie_box)
 
-        # 4. 插入 演员和电影关系表
+        # 4. 插入演员和电影关系表
         # actor_id
         # actor = ActorInfo.query.filter(ActorInfo.actor_name == actor_name).first()
         # print(actor)
@@ -499,6 +621,7 @@ def query():
 
 
 @app.route('/edit/<int:movie_id>', methods=['GET', 'POST'])
+@login_required
 def edit(movie_id):
     movie = MovieInfo.query.get_or_404(movie_id)  # 根据 movie_id 获取电影信息，如果不存在则返回 404 错误
     if request.method == 'POST':
@@ -512,7 +635,7 @@ def edit(movie_id):
         relation_type = request.form.getlist("relation_type[]")
         box = request.form.get('box')
         actor_id = request.form.getlist('actor_id[]')
-        act_relation = convert_data_format_act_relation(actor_id=actor_id, relation_type=relation_type)
+        act_relation = _convert_data_format_act_relation(actor_id=actor_id, relation_type=relation_type)
 
         # 验证数据
         if not movie_name or not year or len(year) > 4 or len(movie_name) > 60:
@@ -537,7 +660,7 @@ def edit(movie_id):
             for j in range(len(relation_types)):
                 mov_act_relas[j].relation_type = relation_types[j]
 
-        # # 更新收视率
+        # # 更新票房
         movie_box = MovieBox.query.filter_by(movie_id=movie_id).first()
         movie_box.box = box
         #
@@ -555,8 +678,8 @@ def edit(movie_id):
 
 
 @app.route('/movie/detail_info/<int:movie_id>', methods=['GET', 'POST'])
+@login_required
 def detail_info(movie_id):
-    movie = MovieInfo.query.get_or_404(movie_id)
     new_combined_data = query_all_data()
     target = {}
     for i in new_combined_data:
@@ -566,15 +689,16 @@ def detail_info(movie_id):
 
 
 @app.route('/movie/delete/<int:movie_id>', methods=['POST'])  # 限定只接受 POST 请求
+@login_required
 def delete(movie_id):
     # 1. 删除电影表
     movie = MovieInfo.query.get_or_404(movie_id)  # 获取电影记录
     db.session.delete(movie)  # 删除对应的记录
-    #  2. 删除收视率表
+    #  2. 删除票房表
     movie_box = MovieBox.query.get_or_404(movie_id)
     db.session.delete(movie_box)
 
-    #  3. 删除演员和 电影关系表
+    #  3. 删除演员和电影关系表
     move_box_datas = MovieActorRelation.query.filter(MovieActorRelation.movie_id == movie_id)
     for move_box_data in move_box_datas:
         db.session.delete(move_box_data)
@@ -582,3 +706,22 @@ def delete(movie_id):
     db.session.commit()  # 提交数据库会话
     flash('Item deleted.')
     return redirect(url_for('index'))  # 重定向回主页
+
+
+"""
+
+1、票房查询分析要在详情里写出票房的排名  xx
+
+2、把页面多余的线去掉,每个电影之间用一条线分割就行。 xx
+3、添加新电影信息时能够添加多个演职人员，且演员名字能够自定义 (如果输入的演员 不在演员表中？怎么处理？)
+
+
+4、通过演员名查询演员个人信息，希望查询得到的页面是：
+XX的个人信息
+XX参演的电影：
++查询出来的电影 （这里都需要查询出哪些信息？ 电影相关的信息展示哪些字段？）
+5、写注册界面，恢复登录登出界面    
+6、edit功能要能编辑演员的名字   （问题同3）
+7、gif图片不会动   （需要提供 一个会动的龙猫图，） 
+
+"""
