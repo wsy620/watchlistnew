@@ -38,13 +38,16 @@
             <h4>演职人员列表</h4>
             {% for actor in combined_data.actors %}
             <div class="actor">
-                <h5 class="mt-4">演员: {{ actor.actor_name }}</h5>
+                <h5 class="mt-4"></h5>
+
+                <input type="text" class="form-control" id="actor_name" name="actor_name[]"
+                       autocomplete="off" required value="{{ actor.actor_name }}">
                 <input type="hidden" name="actor_id[]" value="{{ actor.actor_id }}"/>
                 <input type="hidden" name="actor_id[]" value="|"/>
                 <div class="form-group">
                     <label for="gender">性别</label>
                     <input type="text" class="form-control" id="gender" name="gender" autocomplete="off" required
-                           value="{{ actor.gender }}" readonly>
+                           value="{{ actor.gender }}" >
                 </div>
                 <div class="relations-group">
                     <h6>关系列表</h6>
