@@ -184,6 +184,8 @@ class WatchlistTestCase(unittest.TestCase):
         self.assertNotIn('Login success.', data)
         self.assertIn('Invalid username or password.', data)
 
+
+
         # 测试使用错误的用户名登录
         response = self.client.post('/login', data=dict(
             username='wrong',
@@ -191,7 +193,7 @@ class WatchlistTestCase(unittest.TestCase):
         ), follow_redirects=True)
         data = response.get_data(as_text=True)
         self.assertNotIn('Login success.', data)
-        self.assertIn('Invalid username or password.', data)
+        self.assertIn('用户不存在', data)
 
         # 测试使用空用户名登录
         response = self.client.post('/login', data=dict(

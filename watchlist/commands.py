@@ -183,7 +183,12 @@ def initdb0():
     db.create_all()
     # 2. 创建表
 
-    # # 新增
+    ##新增
+    #将电影信息数据添加到数据库中。使用了一个循环来遍历movie_info_data中的每个元素，并根据每个元素创建一个MovieInfo对象，然后将其添加到数据库会话中。
+    #在循环中，首先获取电影信息中的发布日期（release_date）。然后，使用datetime函数将发布日期的年份、月份和日期提取出来，并将其作为参数传递给datetime
+    #函数来创建一个datetime对象。接下来，根据电影信息中的其他属性，例如电影ID、电影名称、国家、电影类型和年份，创建一个MovieInfo对象。
+    #最后，通过db.session.add(movie)将movie对象添加到数据库会话中，以便在提交更改后将其保存到数据库中。
+    #已有一个名为MovieInfo的数据库模型类（在models.py），并且已经正确地导入了相关的模块和库，例如db和datetime。
     for m in movie_info_data:
         release_date = m['release_date']
 
