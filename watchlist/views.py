@@ -90,6 +90,8 @@ def index():
         # 获取到的文件会是数组文件
         actors = request.form.getlist('actors')
         relations = request.form.getlist('relations')
+        genders = request.form.getlist('genders')
+        act_country = request.form.getlist('act_country')
         # ['张三丰', '张思枫', '张士大夫']
         # ['演员', '演员', '导演']
         print(actors)
@@ -130,8 +132,8 @@ def index():
 
                 actor_info = ActorInfo(actor_id=last_actor_0_id,
                                        actor_name=actors[i],
-                                       gender="男",
-                                       country="中国"
+                                       gender=genders[i],
+                                       country=act_country[i]
                                        )
                 db.session.add(actor_info)
 

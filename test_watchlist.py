@@ -184,8 +184,6 @@ class WatchlistTestCase(unittest.TestCase):
         self.assertNotIn('Login success.', data)
         self.assertIn('Invalid username or password.', data)
 
-
-
         # 测试使用错误的用户名登录
         response = self.client.post('/login', data=dict(
             username='wrong',
